@@ -11,6 +11,8 @@ import io.ktor.locations.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.util.getOrFail
+import org.slf4j.event.Level
 
 fun main(args: Array<String>): Unit = io.ktor.server.cio.EngineMain.main(args)
 
@@ -24,6 +26,10 @@ fun Application.module(testing: Boolean = false) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
         }
+    }
+
+    install(CallLogging) {
+        level = Level.INFO
     }
 
     val client = HttpClient(CIO) {
@@ -60,6 +66,14 @@ fun Application.module(testing: Boolean = false) {
 
         get("/json/jackson") {
             call.respond(mapOf("hello" to "world"))
+        }
+
+        intercept(ApplicationCallPipeline.Call) {
+            if (call.request.uri.startsWith("/location")) {
+                call.request.queryParameters.getOrFail<Int>("arg1")
+                call.request.queryParameters.getOrFail<String>("arg2")
+            }
+            proceed()
         }
     }
 }
