@@ -36,6 +36,8 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
+        trace { application.log.trace(it.buildText()) }
+
         get("/") {
             call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
         }
@@ -73,6 +75,11 @@ fun Application.module(testing: Boolean = false) {
                 call.request.queryParameters.getOrFail<Int>("arg1")
                 call.request.queryParameters.getOrFail<String>("arg2")
             }
+            proceed()
+        }
+
+        intercept(ApplicationCallPipeline.Fallback) {
+            call.application.environment.log.error("uncaught exception thrown")
             proceed()
         }
     }
