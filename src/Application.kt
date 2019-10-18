@@ -1,5 +1,8 @@
 package com.andrew
 
+import com.andrew.controllers.HealthCheck
+import com.andrew.controllers.MyLocation
+import com.andrew.controllers.Type
 import com.fasterxml.jackson.databind.*
 import io.ktor.application.*
 import io.ktor.client.*
@@ -55,6 +58,10 @@ fun Application.module(testing: Boolean = false) {
 
         get<HealthCheck> {
             call.respond(it.healthCheck())
+        }
+
+        get<ArrowTest.Parse> {
+            call.respond(it.tryParse()!!)
         }
 
         install(StatusPages) {
