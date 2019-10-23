@@ -1,4 +1,4 @@
-package com.andrew
+package com.andrew.controllers
 
 import arrow.core.Either
 import io.ktor.locations.Location
