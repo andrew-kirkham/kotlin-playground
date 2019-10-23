@@ -12,7 +12,7 @@ fun main() {
     logger.info { "starting up!" }
 //    mostBasic()
 //    blockingCoroutine()
-//    coroutineWithScopeDefined()
+    coroutineWithScopeDefined()
 //    ioCoroutine()
 //    launchSuspend()
 //    launchNonSuspend()
@@ -103,7 +103,7 @@ fun launchALotLotLotOfRoutines() = runBlocking {
 fun exceptionHandlingCoroutine() {
     logger.info { "main thread starting" }
     coroutineThrowsException()
-    sleep(1000)
+    sleep(1_000)
 }
 
 fun coroutineThrowsException() = CoroutineScope(Dispatchers.Default).launch {
@@ -117,7 +117,7 @@ fun coroutineThrowsException() = CoroutineScope(Dispatchers.Default).launch {
 fun asyncHandlingCoroutine(): Nothing = runBlocking {
     logger.info { "async thread starting" }
     val deferred = asyncThrowsException()
-    delay(1000)
+    delay(1_000)
     deferred.await()
 }
 
@@ -131,7 +131,7 @@ fun asyncThrowsException() = CoroutineScope(Dispatchers.Default).async {
 //region Caught Exceptions
 fun coroutineHandlingException() {
     throwCaughtException()
-    sleep(1000)
+    sleep(1_000)
 }
 
 fun throwCaughtException() = CoroutineScope(Dispatchers.Default).launch(exceptionHandler) {

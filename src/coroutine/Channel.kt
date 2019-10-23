@@ -16,11 +16,10 @@ private val client = HttpClient()
 
 fun main() {
     logger.info { "Starting" }
-
-//    getValuesFromApiUsingChannels()
+    getValuesFromApiUsingChannels()
 //    getValuesFromApiUsingChannelsBadly()
 //    getValuesFromApiUsingMultipleChannels()
-    manyCoroutinesPushToOneChannel()
+//    manyCoroutinesPushToOneChannel()
     sleep(2_000)
 }
 
@@ -47,6 +46,7 @@ fun CoroutineScope.modifyValues(responses: ReceiveChannel<String>): ReceiveChann
     logger.info { "modifier closing" }
 }
 
+//region Multiple Channels
 fun getValuesFromApiUsingChannels() = GlobalScope.launch(Dispatchers.IO) {
     val apiResponses = produceValuesFromApi()
     val modified = modifyValues(apiResponses)
@@ -56,7 +56,9 @@ fun getValuesFromApiUsingChannels() = GlobalScope.launch(Dispatchers.IO) {
     }
     coroutineContext.cancelChildren() // cancel all children to let main finish
 }
+//endregion
 
+//region Passing to channels improperly
 fun getValuesFromApiUsingChannelsBadly() = GlobalScope.launch(Dispatchers.IO) {
     val apiResponses = produceValuesFromApi()
     for (i in 1..3) {
@@ -65,7 +67,9 @@ fun getValuesFromApiUsingChannelsBadly() = GlobalScope.launch(Dispatchers.IO) {
     }
     coroutineContext.cancelChildren() // cancel all children to let main finish
 }
+//endregion
 
+//region Multiple Channel Processors
 fun CoroutineScope.printvalues(id: Int, responses: ReceiveChannel<String>) = launch {
     logger.info { "printer channel $id started" }
     for (response in responses) {
@@ -82,8 +86,10 @@ fun getValuesFromApiUsingMultipleChannels() = GlobalScope.launch(Dispatchers.IO)
     delay(2_000)
     apiResponses.cancel()
 }
+//endregion
 
 
+//region Many Coroutines One Channel
 suspend fun produceValuesFromApiChannel(channel: Channel<String>) {
     logger.info { "Producer started" }
     var i = 0
@@ -117,3 +123,4 @@ fun manyCoroutinesPushToOneChannel() = CoroutineScope(Dispatchers.IO).launch {
     }
     coroutineContext.cancelChildren()
 }
+//endregion

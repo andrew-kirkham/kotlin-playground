@@ -12,15 +12,14 @@ private val logger = KotlinLogging.logger {}
 private val client = HttpClient()
 
 fun main() {
-//    responsePrinter()
-    takeOnlyAFewElementsFromAFlow()
+    responseCollector()
+//    takeOnlyAFewElementsFromAFlow()
 //    flowBuilder()
 //    complexFlowBuilder()
 //    combiningFlows()
 //    exceptionFlows()
-    sleep(2_000)
+    sleep(5_000)
 }
-
 
 fun getFromUrl(): Flow<String> = flow {
     logger.info { "Flow started" }
@@ -32,30 +31,35 @@ fun getFromUrl(): Flow<String> = flow {
     }
 }
 
-suspend fun responseCollector(): List<String> {
+//region Collector
+fun responseCollector() = CoroutineScope(Dispatchers.IO).launch {
     val flow = getFromUrl()
     val strings = ArrayList<String>()
     logger.info { "about to collect flow" }
-    flow.collect { value -> strings.add(value) }
-    return strings
+    flow.collect { value ->
+        logger.info { "adding value=$value" }
+        strings.add(value)
+    }
+    logger.info { "count=${strings.size}" }
 }
+//endregion
 
-fun responsePrinter() = CoroutineScope(Dispatchers.IO).launch {
-    logger.info { "starting" }
-    val strings = responseCollector()
-    logger.info { "count=$strings.size" }
-}
-
+//region Take
 fun takeOnlyAFewElementsFromAFlow() = CoroutineScope(Dispatchers.IO).launch {
     val flow = getFromUrl()
-    flow.take(2).collect{value -> logger.info { "taking element $value" }}
+    flow.take(2).collect { value -> logger.info { "taking element $value" } }
 }
+//endregion
 
+//region Builder
 val sum: (Int, Int) -> Int = { x: Int, y: Int -> x + y }
+
 fun flowBuilder() = runBlocking {
     (1..100).asFlow().collect { value -> logger.info { sum(value, value) } }
 }
+//endregion
 
+//region Chaining
 fun complexFlowBuilder() = CoroutineScope(Dispatchers.IO).launch {
     val flow = getFromUrl()
     val valuesSquared = flow
@@ -68,17 +72,9 @@ fun complexFlowBuilder() = CoroutineScope(Dispatchers.IO).launch {
 
     logger.info { "valuesSquared=$valuesSquared" }
 }
+//endregion
 
-
-fun emitNumbers(): Flow<Int> = flow {
-    (1..3).forEach {
-        logger.info { "sleeping and then emitting $it" }
-        delay(300)
-        logger.info { "emitting $it" }
-        emit(it)
-    }
-}
-
+//region Combining Flows
 fun combiningFlows() = CoroutineScope(Dispatchers.IO).launch {
     val flow = getFromUrl()
     val numbers = emitNumbers()
@@ -88,6 +84,17 @@ fun combiningFlows() = CoroutineScope(Dispatchers.IO).launch {
     }.collect { logger.info { it } }
 }
 
+fun emitNumbers(): Flow<Int> = flow {
+    (1..3).forEach {
+        logger.info { "sleeping and then emitting $it" }
+        delay(300)
+        logger.info { "emitting $it" }
+        emit(it)
+    }
+}
+//endregion
+
+//region Exception Handling
 fun emitPeriodicExceptions(): Flow<Int> = flow {
     (1..10).forEach {
         if (it % 3 == 0) throw ArithmeticException()
@@ -100,3 +107,4 @@ fun exceptionFlows() = CoroutineScope(Dispatchers.IO).launch {
         .catch { e -> logger.info { "caught exception $e" } }
         .collect { logger.info { "emitted value=$it" } }
 }
+//endregion
