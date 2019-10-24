@@ -88,7 +88,6 @@ fun getValuesFromApiUsingMultipleChannels() = GlobalScope.launch(Dispatchers.IO)
 }
 //endregion
 
-
 //region Many Coroutines One Channel
 suspend fun produceValuesFromApiChannel(channel: Channel<String>) {
     logger.info { "Producer started" }
@@ -118,8 +117,8 @@ fun manyCoroutinesPushToOneChannel() = CoroutineScope(Dispatchers.IO).launch {
     launch { produceValuesFromApiChannel(channel) }
     launch { putRandomValuesOnChannel(channel) }
     repeat(5) {
-        val received =  channel.receive()
-        logger.info {"received $received"}
+        val received = channel.receive()
+        logger.info { "received $received" }
     }
     coroutineContext.cancelChildren()
 }

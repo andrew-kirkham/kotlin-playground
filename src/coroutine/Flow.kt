@@ -2,10 +2,11 @@ package com.andrew.coroutine
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import java.lang.Thread.sleep
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import mu.KotlinLogging
-import java.lang.Thread.sleep
+import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
@@ -21,11 +22,11 @@ fun main() {
     sleep(5_000)
 }
 
-fun getFromUrl(): Flow<String> = flow {
+fun getFromUrl(url: String = "https://postman-echo.com/get?a="): Flow<String> = flow {
     logger.info { "Flow started" }
     for (i in 1..3) {
         logger.info { "i=$i" }
-        val response = client.get<String>("https://postman-echo.com/get?a=$i")
+        val response = client.get<String>(url.plus("$i"))
         logger.info { "response=$response" }
         emit(response)
     }
@@ -60,6 +61,7 @@ fun flowBuilder() = runBlocking {
 //endregion
 
 //region Chaining
+
 fun complexFlowBuilder() = CoroutineScope(Dispatchers.IO).launch {
     val flow = getFromUrl()
     val valuesSquared = flow
@@ -90,6 +92,13 @@ fun emitNumbers(): Flow<Int> = flow {
         delay(300)
         logger.info { "emitting $it" }
         emit(it)
+    }
+}
+
+fun emitNumbersForever(): Flow<Int> = flow {
+    while(true) {
+        delay(500)
+        emit(Random.nextInt())
     }
 }
 //endregion

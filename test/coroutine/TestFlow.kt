@@ -1,13 +1,46 @@
 package com.andrew.coroutine
 
 import io.kotlintest.shouldBe
-import io.kotlintest.specs.StringSpec
-import kotlinx.coroutines.async
+import io.kotlintest.specs.AnnotationSpec
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.runBlockingTest
+import kotlin.test.assertNotSame
 
-class TestFlow : StringSpec({
-    "it should return a value of 10 with async/await" {
-        val ret = async {fooCollector() }
-        ret.await() shouldBe 10
+class TestFlow : AnnotationSpec() {
+
+    /*
+    fun emitNumbers(): Flow<Int> = flow {
+        (1..3).forEach {
+            logger.info { "sleeping and then emitting $it" }
+            delay(300)
+            logger.info { "emitting $it" }
+            emit(it)
+        }
     }
-    "it should return from a function that executes"
-})
+
+    fun emitNumbersForever(): Flow<Int> = flow {
+        while(true) {
+            delay(500)
+            emit(Random.nextInt())
+        }
+    }
+     */
+
+    @Test
+    fun testFlow() = runBlockingTest {
+        val flow = emitNumbers()
+        val expected = listOf(1, 2, 3)
+        val actual = flow.toList()
+        expected shouldBe actual
+    }
+
+    @Test
+    fun testFromNeverEndingFlow() = runBlockingTest {
+        val flow = emitNumbersForever()
+        flow.take(1).collect { value ->
+            assertNotSame(1, value)
+        }
+    }
+}

@@ -13,7 +13,7 @@ class ArrowTest {
     @Location("/{name}")
     class Parse(val name: String) {
         fun tryParse(): String? {
-            return when(val result = parse(name)) {
+            return when (val result = parse(name)) {
                 is Either.Left -> result.a.message
                 is Either.Right -> result.b.toString()
             }

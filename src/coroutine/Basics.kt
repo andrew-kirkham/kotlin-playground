@@ -10,9 +10,9 @@ private val logger = KotlinLogging.logger {}
 
 fun main() {
     logger.info { "starting up!" }
-//    mostBasic()
+    mostBasic()
 //    blockingCoroutine()
-    coroutineWithScopeDefined()
+//    coroutineWithScopeDefined()
 //    ioCoroutine()
 //    launchSuspend()
 //    launchNonSuspend()
@@ -68,7 +68,10 @@ suspend fun waitAndReturn(): Int {
 fun launchSuspend() = CoroutineScope(Dispatchers.Default).launch {
     waitAndReturn()
     launch { waitAndReturn() }
-    logger.info { "post launch" }
+    logger.info { "post launch. starting Async" }
+    val asyncValue = async { waitAndReturn() }
+    asyncValue.await()
+    logger.info { "post async" }
 }
 
 fun nonSuspend(): Int {
@@ -140,7 +143,7 @@ fun throwCaughtException() = CoroutineScope(Dispatchers.Default).launch(exceptio
     throw ArithmeticException()
 }
 
-val exceptionHandler = CoroutineExceptionHandler{ context, throwable ->
+val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
     logger.info { "context=$context" }
     logger.info { "throwable.message=${throwable.message}" }
 }
