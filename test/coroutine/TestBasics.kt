@@ -28,7 +28,6 @@ class TestBasics : AnnotationSpec() {
     }
 }
 
-
 class TestWithDescribeSpec : DescribeSpec({
     describe("coroutines") {
         it("can return a value from a suspend function") {

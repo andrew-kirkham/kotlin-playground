@@ -2,15 +2,15 @@ package com.andrew.coroutine
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import java.lang.Thread.sleep
 import kotlinx.coroutines.*
 import mu.KotlinLogging
-import java.lang.Thread.sleep
 
 private val logger = KotlinLogging.logger {}
 
 fun main() {
     logger.info { "starting up!" }
-    mostBasic()
+    globalScope()
 //    blockingCoroutine()
 //    coroutineWithScopeDefined()
 //    ioCoroutine()
@@ -20,12 +20,13 @@ fun main() {
 //    exceptionHandlingCoroutine()
 //    asyncHandlingCoroutine()
 //    coroutineHandlingException()
-//    sleep(3_000)
+    sleep(3_000)
 }
 
 //region Global Scope
-fun mostBasic() {
+fun globalScope() {
     GlobalScope.launch {
+        logger.info { "Coroutine launched" }
         delay(1_000L) // non-blocking delay for 1 second
         logger.info { "slept for 1 second" }
     }
@@ -49,6 +50,7 @@ fun coroutineWithScopeDefined() = CoroutineScope(Dispatchers.Default).launch {
     logger.info { "done sleeping" }
 }
 
+// IO dispatcher is intended for blocking calls
 fun ioCoroutine() = CoroutineScope(Dispatchers.IO).launch {
     val client = HttpClient()
     val response = client.get<String>("https://postman-echo.com/get?a=1")
@@ -66,8 +68,11 @@ suspend fun waitAndReturn(): Int {
 }
 
 fun launchSuspend() = CoroutineScope(Dispatchers.Default).launch {
+    // launch the suspend function synchronously in the context of this coroutine scope
     waitAndReturn()
+    // launch the suspend function within a new coroutine
     launch { waitAndReturn() }
+    // launch the suspend function within an async builder and await the results
     logger.info { "post launch. starting Async" }
     val asyncValue = async { waitAndReturn() }
     asyncValue.await()
@@ -81,6 +86,7 @@ fun nonSuspend(): Int {
 }
 
 fun launchNonSuspend() = CoroutineScope(Dispatchers.Default).launch {
+    // even non suspend functions can be launched within coroutine contexts
     launch {
         val x = nonSuspend()
         logger.info { "received $x" }
@@ -90,12 +96,13 @@ fun launchNonSuspend() = CoroutineScope(Dispatchers.Default).launch {
 //endregion
 
 //region Lots of Coroutines
+// this will NOT kill your machine. these are very lightweight and will all be able to process together
 fun launchALotLotLotOfRoutines() = runBlocking {
     repeat(100_000) {
         // launch a lot of coroutines
         launch {
             delay(1_000L)
-            print(".")
+            print("Hi!")
         }
     }
     delay(1_000L)
@@ -110,6 +117,7 @@ fun exceptionHandlingCoroutine() {
 }
 
 fun coroutineThrowsException() = CoroutineScope(Dispatchers.Default).launch {
+    // pay attention to the logs of where the exception is surfaced
     logger.info { "throwing exception in .5 seconds" }
     delay(500)
     throw ArithmeticException()
@@ -125,6 +133,7 @@ fun asyncHandlingCoroutine(): Nothing = runBlocking {
 }
 
 fun asyncThrowsException() = CoroutineScope(Dispatchers.Default).async {
+    // pay attention to the logs of where the exception is surfaced
     logger.info { "throwing exception in .5 seconds" }
     delay(500)
     throw ArithmeticException()
@@ -137,6 +146,8 @@ fun coroutineHandlingException() {
     sleep(1_000)
 }
 
+// note the new exceptionHandler being passed to the launch function
+// it will capture any exception that isnt explicitly caught
 fun throwCaughtException() = CoroutineScope(Dispatchers.Default).launch(exceptionHandler) {
     logger.info { "throwing exception in .5 seconds" }
     delay(500)

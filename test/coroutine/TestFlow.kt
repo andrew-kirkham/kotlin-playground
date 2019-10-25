@@ -2,11 +2,11 @@ package com.andrew.coroutine
 
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.AnnotationSpec
+import kotlin.test.assertNotSame
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runBlockingTest
-import kotlin.test.assertNotSame
 
 class TestFlow : AnnotationSpec() {
 
